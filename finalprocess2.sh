@@ -5,12 +5,16 @@ TARGET_BRANCH="main"
 
 # Include and exclude lists
 
-INCLUDE_LIST=("*.py" "*.sh" "*.js" "*.go" "*.groovy" "*.yml" "*.yaml" "*sql" "*.cpp" "*.hpp" "*.c" "*.h")
+INCLUDE_LIST=("*.py" "*.sh" "*.js" "*.go" "*.groovy" "*.yml" "*.yaml" "*sql" "*.cpp" "*.hpp" "*.c" "*.h" "*.txt")
 #("*.py" "*.js" "*.sh")  # Extensions of files you want to include
-EXCLUDE_LIST=("*.log" "*.tmp" "*.md")  # Extensions of files to exclude
+EXCLUDE_LIST=("*.log" "*.tmp" "*.md" "golang/vendor/*")  # Extensions of files to exclude
 
+EXCLUDE_DIRS=("golang/vendor" "node_modules" "build")
 # Expected copyright years (array)
 EXPECTED_YEAR=$(date +"%Y")
+
+# Directories to exclude
+EXCLUDE_DIRS=("golang/vendor" "node_modules" "build")
 
 # List to track failed files and their respective messages
 FAILED_FILES=()
@@ -63,32 +67,43 @@ check_copyright_year() {
 
 # Step 6: Process each changed file
 for file in $CHANGED_FILES; do
+    # Step 7: Skip files in the excluded directories
+    for exclude_dir in "${EXCLUDE_DIRS[@]}"; do
+        if [[ $file == $exclude_dir/* ]]; then
+            continue 2  # Continue to the next file
+        fi
+    done
 
-    # Step 8: Check against the include list
+    # Step 8: Check against the exclude list
+    if matches_pattern "$file" "${EXCLUDE_LIST[@]}"; then
+        continue
+    fi
+
+    # Step 9: Check against the include list
     if ! matches_pattern "$file" "${INCLUDE_LIST[@]}"; then
         continue
     fi
 
-    # Step 9: Check if file contains "// Code generated"
+    # Step 10: Check if file contains "// Code generated"
     if contains_generated_code "$file"; then
         continue
     fi
 
-    # Step 10: Check for existing copyright
+    # Step 11: Check for existing copyright
     if ! contains_copyright "$file"; then
         FAILED_FILES+=("$file")
         FAILED_MESSAGES+=("File $file is missing copyright information.")
         continue
     fi
 
-    # Step 11: Check for correct copyright year
+    # Step 12: Check for correct copyright year
     if ! check_copyright_year "$file"; then
         FAILED_FILES+=("$file")
         FAILED_MESSAGES+=("File $file has an incorrect or missing copyright year.")
     fi
 done
 
-# Step 12: If any files failed, list them and then provide detailed error messages
+# Step 13: If any files failed, list them and then provide detailed error messages
 if [[ ${#FAILED_FILES[@]} -gt 0 ]]; then
     echo "The following files failed validation:"
     
