@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Target branch to compare with
-TARGET_BRANCH="main"
+TARGET_BRANCH="master"
 
 # Include lists
 INCLUDE_LIST=(".py" ".sh" ".js" ".go" ".groovy" ".yml" ".yaml" ".sql" ".cpp" ".hpp" ".c" ".h")
@@ -77,11 +77,13 @@ for file in $CHANGED_FILES; do
 
     # Step 8: Check if file contains "// Code generated"
     if contains_generated_code "$file"; then
+        echo "Skipping code-generated file: $file"
         continue
     fi
 
     # Step 9: Check for existing copyright
     if ! contains_copyright "$file"; then
+        echo "File $file is missing copyright information. Marking as failed..."
         validation_failed=1
         continue
     fi

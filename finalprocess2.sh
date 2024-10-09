@@ -4,11 +4,13 @@
 TARGET_BRANCH="main"
 
 # Include and exclude lists
-INCLUDE_LIST=("*.py" "*.js" "*.sh")  # Extensions of files you want to include
+
+INCLUDE_LIST=("*.py" "*.sh" "*.js" "*.go" "*.groovy" "*.yml" "*.yaml" "*sql" "*.cpp" "*.hpp" "*.c" "*.h")
+#("*.py" "*.js" "*.sh")  # Extensions of files you want to include
 EXCLUDE_LIST=("*.log" "*.tmp" "*.md")  # Extensions of files to exclude
 
-# Expected copyright years (you can add more years here)
-EXPECTED_YEARS=("2023" "2024")
+# Expected copyright years (array)
+EXPECTED_YEAR=$(date +"%Y")
 
 # List to track failed files and their respective messages
 FAILED_FILES=()
@@ -61,10 +63,6 @@ check_copyright_year() {
 
 # Step 6: Process each changed file
 for file in $CHANGED_FILES; do
-    # Step 7: Check against the exclude list
-    if matches_pattern "$file" "${EXCLUDE_LIST[@]}"; then
-        continue
-    fi
 
     # Step 8: Check against the include list
     if ! matches_pattern "$file" "${INCLUDE_LIST[@]}"; then
