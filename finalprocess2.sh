@@ -10,8 +10,9 @@ EXCLUDE_LIST=("*.log" "*.tmp" "*.md")  # Extensions of files to exclude
 # Expected copyright years (you can add more years here)
 EXPECTED_YEARS=("2023" "2024")
 
-# List to track failure messages
+# List to track failed files and their respective messages
 FAILED_FILES=()
+FAILED_MESSAGES=()
 
 # Step 1: Get the list of changed files from git diff
 CHANGED_FILES=$(git diff --name-only $TARGET_BRANCH)
@@ -77,22 +78,35 @@ for file in $CHANGED_FILES; do
 
     # Step 10: Check for existing copyright
     if ! contains_copyright "$file"; then
-        FAILED_FILES+=("File $file is missing copyright information.")
+        FAILED_FILES+=("$file")
+        FAILED_MESSAGES+=("File $file is missing copyright information.")
         continue
     fi
 
     # Step 11: Check for correct copyright year
     if ! check_copyright_year "$file"; then
-        FAILED_FILES+=("File $file has an incorrect or missing copyright year.")
+        FAILED_FILES+=("$file")
+        FAILED_MESSAGES+=("File $file has an incorrect or missing copyright year.")
     fi
 done
 
-# Step 12: If any files failed, list them and exit with failure
+# Step 12: If any files failed, list them and then provide detailed error messages
 if [[ ${#FAILED_FILES[@]} -gt 0 ]]; then
     echo "The following files failed validation:"
-    for failed_message in "${FAILED_FILES[@]}"; do
+    
+    # List all the failed files first
+    for failed_file in "${FAILED_FILES[@]}"; do
+        echo "$failed_file"
+    done
+
+    echo ""
+
+    # Provide detailed error messages
+    echo "Detailed error messages:"
+    for failed_message in "${FAILED_MESSAGES[@]}"; do
         echo "$failed_message"
     done
+    
     exit 1
 else
     echo "All files passed validation."
