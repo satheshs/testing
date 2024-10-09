@@ -1,1 +1,0 @@
-© Copyright IBM Corp. 2024
